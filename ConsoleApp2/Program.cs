@@ -38,7 +38,7 @@ namespace ConsoleApp2
                 foreach (var item in Unify.Data)
                 {
                     Console.WriteLine(item.SiteId);
-                    Console.WriteLine(item.UserId);
+                    Console.WriteLine(item.Userd);
                 }
             }
         }
