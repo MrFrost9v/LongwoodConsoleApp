@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Program.cs" />
+    <Compile Remove="repos.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Counts.mdf" />
+    <None Remove="Counts_log.ldf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Counts.mdf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="repos.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Program.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Counts_log.ldf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\APIPeopleCounter\APIPeopleCounter\APIPeopleCounter.csproj" />
+  </ItemGroup>
+
+</Project>
