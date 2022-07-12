@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Data;
 using System.Data.SqlClient;
 using System.Net.Http.Headers;
 using System.Text;
@@ -45,24 +46,70 @@ namespace ConsoleApp2
         }
 
         //This takes in the stated parameters and stores them into the OccupancyData Database.
-        public static void InsertSensorData(int MaxOccupancy, int SumIns, DateTime DateTime)
+        public static void UpDateSensorData(string Location, int MaxOccupancy, int SumIns, DateTime DateTime)
         {
             string ConnString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\ConsoleApp2\Counts.mdf;Integrated Security=True;";
+            string InsertStatement = @"Insert into OccupancyData (Location,max_occupancy,sum_ins, date_time) VALUES(@Location,@max_occupancy,@sum_ins,@date_time)";
+            string SensorStatement = "Select * from OccupancyData";
             using (SqlConnection Conn = new(ConnString))
             {
                 Conn.Open();
-                SqlTransaction Transaction = Conn.BeginTransaction();
-                SqlCommand Cmd = new()
+                using (SqlTransaction Transaction = Conn.BeginTransaction())
+                using (SqlCommand cmd = new(SensorStatement, Conn, Transaction))
                 {
-                    Connection = Conn,
-                    Transaction = Transaction,
-                    CommandText = "Insert into OccupancyData (max_occupancy,sum_ins, date_time) VALUES(@max_occupancy,@sum_ins,@date_time)"
-                };
-                Cmd.Parameters.AddWithValue("@max_occupancy", MaxOccupancy);
-                Cmd.Parameters.AddWithValue("@sum_ins", SumIns);
-                Cmd.Parameters.AddWithValue("@date_time", DateTime);
-                Cmd.ExecuteNonQuery();
-                Transaction.Commit();
+                    SqlDataAdapter adapter = new(cmd);
+                    DataTable dt = new();
+                    adapter.Fill(dt);
+                    if (dt.Rows.Count == 0)
+                    {
+                        using (SqlCommand Cmd = new(InsertStatement, Conn, Transaction))
+                        {
+                            Cmd.Parameters.AddWithValue("@Location", Location);
+                            Cmd.Parameters.AddWithValue("@max_occupancy", MaxOccupancy);
+                            Cmd.Parameters.AddWithValue("@sum_ins", SumIns);
+                            Cmd.Parameters.AddWithValue("@date_time", DateTime);
+                            Cmd.ExecuteNonQuery();
+                            Transaction.Commit();
+                        }
+                    }
+                    else
+                    {
+                        int counter = 0;
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            if (!Location.Equals(row.Field<string>("Location")))
+                            {
+                                counter++;
+                            }
+                            else
+                            {
+                                string UpDateStatement = @"UPDATE OccupancyData SET max_occupancy = @max_occupancy, sum_ins = @sum_ins, date_time = @date_time WHERE Location = @Location";
+                                using (SqlCommand Cmd = new(UpDateStatement, Conn, Transaction))
+                                {
+                                    Cmd.Parameters.AddWithValue("@Location", Location);
+                                    Cmd.Parameters.AddWithValue("@max_occupancy", MaxOccupancy);
+                                    Cmd.Parameters.AddWithValue("@sum_ins", SumIns);
+                                    Cmd.Parameters.AddWithValue("@date_time", DateTime);
+                                    Cmd.ExecuteNonQuery();
+                                    Transaction.Commit();
+                                }
+                            }
+                        }
+                        if (counter == dt.Rows.Count)
+                        {
+                            using (SqlCommand Cmd = new(InsertStatement, Conn, Transaction))
+                            {
+                                Cmd.Parameters.AddWithValue("@Location", Location);
+                                Cmd.Parameters.AddWithValue("@max_occupancy", MaxOccupancy);
+                                Cmd.Parameters.AddWithValue("@sum_ins", SumIns);
+                                Cmd.Parameters.AddWithValue("@date_time", DateTime);
+                                Cmd.ExecuteNonQuery();
+                                Transaction.Commit();
+                            }
+                        }
+                    }
+                    
+                }
                 Conn.Close();
             }
 

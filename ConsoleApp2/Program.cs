@@ -11,7 +11,6 @@ namespace ConsoleApp2
     {
         private static HttpClient client = new();
         static HttpClientHandler Handler = new HttpClientHandler();
-       // List<string> CList = {}
 
         public static void Main(string[] args)
         {
@@ -27,7 +26,7 @@ namespace ConsoleApp2
                 Console.WriteLine(item.SumIns);
                 Console.WriteLine(item.DateTime);
                 Console.WriteLine();
-                //InsertSensorData(item.MaxOccupancy, item.SumIns, item.DateTime);
+                UpDateSensorData(item.Name, item.MaxOccupancy, item.SumIns, item.DateTime);
             }
 
             var ClientResponce = GetClientResponce(0).Result;
