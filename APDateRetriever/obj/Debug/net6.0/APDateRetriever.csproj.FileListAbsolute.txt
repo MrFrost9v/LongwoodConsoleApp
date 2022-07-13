@@ -1,0 +1,12 @@
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\bin\Debug\net6.0\APDateRetriever.deps.json
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\bin\Debug\net6.0\APDateRetriever.dll
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\bin\Debug\net6.0\APDateRetriever.pdb
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.csproj.AssemblyReference.cache
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.AssemblyInfoInputs.cache
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.AssemblyInfo.cs
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.csproj.CoreCompileInputs.cache
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.dll
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\refint\APDateRetriever.dll
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\APDateRetriever.pdb
+C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\APDateRetriever\obj\Debug\net6.0\ref\APDateRetriever.dll

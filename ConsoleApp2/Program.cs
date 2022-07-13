@@ -11,13 +11,17 @@ namespace ConsoleApp2
     {
         private static HttpClient client = new();
         static HttpClientHandler Handler = new HttpClientHandler();
-
+        public static readonly List<string> ConservatoryAps = new List<string> { "Ballroom 2nd Floor", "Ballroom Mezzanine", "Children's Garden", "East Conservatory", "East Roof", "Fern Floor",
+            "Fern Floor Balcony", "Garden Path", "Pantry", "Patio of Oranges", "Performing Arts", "Silver Garden", "XG - West Side" };
+        public static readonly List<string> Exclutions = new List<string> { "STP", "Substation West", "Security", "Anvil", "South Park", "SouthPark Pole", "Nursery Headhouse", "Pole Barn",
+            "B-70 Headhouse", "Civil", "Equip Maint", "Paint Shop", "Electric Shop", "Facilities Building", "Education T54", "Dorm 55", "Dorm 57", "Dorm 59", "Dorm 61",
+            "Dorm 63", "Dorm 65", "Dorm 66 - 2nd Floor", "Education T72", "Education T76", "Education T77", "B-75 Office space", "Data Center", "Nuttery IT", "Nuttery Conf Room" };
         public static void Main(string[] args)
         {
             var response = GetToken().Result;
 
             var data = GetPeopleData(response.AccessToken, client).Result;
-            
+
             foreach (var item in data.Results)
             {
                 int Id = item.Name.GetHashCode();
@@ -32,11 +36,11 @@ namespace ConsoleApp2
             var ClientResponce = GetClientResponce(0).Result;
             int cl = 0;
             int bl = 0;
-            
+
             var AccessPointResponce = GetAccessPointResponce().Result;
             if (AccessPointResponce != null)
             {
-                    foreach (var point in AccessPointResponce.Data)
+                foreach (var point in AccessPointResponce.Data)
                 {
                     cl++;
                     int clients = 0;
@@ -45,7 +49,7 @@ namespace ConsoleApp2
                     Console.WriteLine();
                     InsertAP(point.Name, point.Mac);
                     foreach (var Client in ClientResponce.Data)
-                    { 
+                    {
                         if (Client.APMac == point.Mac && Client.Essid == "FreeGardenWIFI")
                         {
                             bl++;
@@ -56,10 +60,10 @@ namespace ConsoleApp2
                         }
                     }
                     Console.WriteLine();
-                    
                 }
             }
             UpDateClients(ClientResponce);
+            UpDateSensorToAP();
         }
 
 
@@ -93,7 +97,6 @@ namespace ConsoleApp2
 
 
         }
-
 
         private static async Task<AccessPointGetResponce> GetAccessPointResponce()
         {
@@ -139,7 +142,7 @@ namespace ConsoleApp2
             return (int)result.StatusCode;
         }
 
-        public static void InsertClient (string Mac, string Client)
+        public static void InsertClient(string Mac, string Client)
         {
             string ConnString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\ConsoleApp2\Counts.mdf;Integrated Security=True;";
             string ClientStatement = "Select * from Clients";
@@ -319,6 +322,84 @@ namespace ConsoleApp2
                     }
                 }
                 Conn.Close();
+            }
+        }
+
+        public static void UpDateSensorToAP()
+        {
+            string ConnString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\ConsoleApp2\Counts.mdf;Integrated Security=True;";
+            string OccupancyStatement = "Select * from OccupancyData";
+            string APStatement = "Select * from APs";
+            string SensorStatement = "Select * from SensorsToAPs";
+            using (SqlConnection Conn = new(ConnString))
+            {
+                Conn.Open();
+                using (SqlCommand Cmd = new(OccupancyStatement, Conn))
+                using (SqlCommand cmd = new(APStatement, Conn))
+                using (SqlCommand comd = new(SensorStatement, Conn))
+                {
+                    SqlDataAdapter dataAdapter = new(Cmd);
+                    SqlDataAdapter adapter = new(cmd);
+                    SqlDataAdapter SAPAdapter = new(comd);
+                    DataTable OD = new();
+                    dataAdapter.Fill(OD);
+                    DataTable APD = new();
+                    adapter.Fill(APD);
+                    DataTable SAPD = new();
+                    SAPAdapter.Fill(SAPD);
+                    if (SAPD.Rows.Count == 0)
+                    {
+                        foreach (DataRow ODRow in OD.Rows)
+                        {
+                            string InsertStatement = "Insert into SensorsToAps (Location,AP_Id) VALUES(@Location,@AP_Id)";
+                            if ("Gift Shop space".Equals(ODRow.Field<string>("Location")))
+                            {
+                                using (SqlTransaction Transaction = Conn.BeginTransaction())
+                                using (SqlCommand Insertion = new SqlCommand(InsertStatement, Conn, Transaction))
+                                {
+                                    Insertion.Parameters.AddWithValue("@Location", "Gift Shop space");
+                                    Insertion.Parameters.AddWithValue("@AP_Id", 525);
+                                    Insertion.ExecuteNonQuery();
+                                    Transaction.Commit();
+                                }
+                            }
+                            else if ("Conservatory".Equals(ODRow.Field<string>("Location")))
+                            {
+                                foreach (DataRow APRow in APD.Rows)
+                                {
+                                    if (ConservatoryAps.Contains(APRow.Field<string>("access_point")))
+                                    {
+                                        using (SqlTransaction Transaction = Conn.BeginTransaction())
+                                        using (SqlCommand Insertion = new SqlCommand(InsertStatement, Conn, Transaction))
+                                        {
+                                            Insertion.Parameters.AddWithValue("@Location", ODRow.Field<string>("Location"));
+                                            Insertion.Parameters.AddWithValue("@AP_Id", APRow.Field<int>("Id"));
+                                            Insertion.ExecuteNonQuery();
+                                            Transaction.Commit();
+                                        }
+                                    }
+                                }
+                            }
+                            else if ("Entry Into Gardens".Equals(ODRow.Field<string>("Location")))
+                            {
+                                foreach (DataRow APRow in APD.Rows)
+                                {
+                                    if (!ConservatoryAps.Contains(APRow.Field<string>("access_point")) && !Exclutions.Contains(APRow.Field<string>("access_point")))
+                                    {
+                                        using (SqlTransaction Transaction = Conn.BeginTransaction())
+                                        using (SqlCommand Insertion = new SqlCommand(InsertStatement, Conn, Transaction))
+                                        {
+                                            Insertion.Parameters.AddWithValue("@Location", ODRow.Field<string>("Location"));
+                                            Insertion.Parameters.AddWithValue("@AP_Id", APRow.Field<int>("Id"));
+                                            Insertion.ExecuteNonQuery();
+                                            Transaction.Commit();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
