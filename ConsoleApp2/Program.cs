@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using static ConsoleApp2.PeopleSensor;
 using System.Data.SqlClient;
 using System.Data;
+using static APDateRetriever.Table;
 
 namespace ConsoleApp2
 {
@@ -18,7 +19,7 @@ namespace ConsoleApp2
             "Dorm 63", "Dorm 65", "Dorm 66 - 2nd Floor", "Education T72", "Education T76", "Education T77", "B-75 Office space", "Data Center", "Nuttery IT", "Nuttery Conf Room" };
         public static void Main(string[] args)
         {
-            var response = GetToken().Result;
+            /*var response = GetToken().Result;
 
             var data = GetPeopleData(response.AccessToken, client).Result;
 
@@ -63,7 +64,9 @@ namespace ConsoleApp2
                 }
             }
             UpDateClients(ClientResponce);
-            UpDateSensorToAP();
+            UpDateSensorToAP();*/
+            var Data = PercetageDataMaker("Conservatory");
+            Console.WriteLine(Data.ToString());
         }
 
 

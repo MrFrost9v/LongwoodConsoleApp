@@ -10,7 +10,7 @@ namespace ConsoleApp2
     public class PeopleSensor
     {
         // This will post the credentials to the Sensource site to get the authentication token needed to acess the data.
-        internal static async Task<PeopleAuth> GetToken()
+        public static async Task<PeopleAuth> GetToken()
         {
             var client = new HttpClient();
 
@@ -31,7 +31,7 @@ namespace ConsoleApp2
         }
 
         //This uses the authentication token provided to recieve the sensor data from Sensource and return it as Json.
-        internal static async Task<PeopleResponce> GetPeopleData(string AuthToken, HttpClient client)
+        public static async Task<PeopleResponce> GetPeopleData(string AuthToken, HttpClient client)
         {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(

@@ -16,7 +16,7 @@ namespace APDateRetriever
             "B-70 Headhouse", "Civil", "Equip Maint", "Paint Shop", "Electric Shop", "Facilities Building", "Education T54", "Dorm 55", "Dorm 57", "Dorm 59", "Dorm 61",
             "Dorm 63", "Dorm 65", "Dorm 66 - 2nd Floor", "Education T72", "Education T76", "Education T77", "B-75 Office space", "Data Center", "Nuttery IT", "Nuttery Conf Room" };
         //This will retrieve the client data from Unifi
-        private static async Task<ClientGetResponce> GetClientResponce(int fails)
+        public static async Task<ClientGetResponce> GetClientResponce(int fails)
         {
             if ((int)await UnifySignIn() == 200)
             {
@@ -25,7 +25,7 @@ namespace APDateRetriever
                 client.DefaultRequestHeaders.Accept.Add(
                     new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var stringTask = await client.GetAsync("https://unifi.longwoodgardens.org:8443/api/s/default/stat/sta").ConfigureAwait(false);
+                var stringTask = await client.GetAsync("").ConfigureAwait(false);
                 if (stringTask.IsSuccessStatusCode)
                 {
                     var str = await stringTask.Content.ReadAsStringAsync();
@@ -46,7 +46,7 @@ namespace APDateRetriever
 
         }
 
-        private static async Task<AccessPointGetResponce> GetAccessPointResponce()
+        public static async Task<AccessPointGetResponce> GetAccessPointResponce()
         {
             if ((int)await UnifySignIn() == 200)
             {
@@ -55,7 +55,7 @@ namespace APDateRetriever
                 client.DefaultRequestHeaders.Accept.Add(
                     new MediaTypeWithQualityHeaderValue("application/json"));
 
-                var stringTask = await client.GetAsync("https://unifi.longwoodgardens.org:8443/api/s/default/stat/device-basic").ConfigureAwait(false);
+                var stringTask = await client.GetAsync("").ConfigureAwait(false);
                 if (stringTask.IsSuccessStatusCode)
                 {
                     var str = await stringTask.Content.ReadAsStringAsync();
@@ -80,13 +80,13 @@ namespace APDateRetriever
 
             var body = new
             {
-                username = "API",
-                password = "Sphe+ica#Dreamy"
+                username = "",
+                password = ""
             };
 
             var Json = JsonConvert.SerializeObject(body);
 
-            var result = await cli.PostAsync("https://unifi.longwoodgardens.org:8443/api/login", new StringContent(Json, Encoding.UTF8, "application/json"));
+            var result = await cli.PostAsync("", new StringContent(Json, Encoding.UTF8, "application/json"));
             return (int)result.StatusCode;
         }
 
@@ -349,6 +349,86 @@ namespace APDateRetriever
                     }
                 }
             }
+        }
+
+        public class PercetageData
+        {
+            [JsonProperty("Location")]
+            public string? Location { get; set; }
+            [JsonProperty("People")]
+            public int? People { get; set; }
+            [JsonProperty("Clients")]
+            public int? Clients { get; set; }
+            [JsonProperty("Percentage")]
+            public double? Percentage { get; set; }
+            public PercetageData(string location, int people, int clients, double percentage)
+            {
+                Location = location;
+                People = people;
+                Clients = clients;
+                Percentage = percentage;
+            }
+        }
+
+        public class PercetageDataList
+        {
+            [JsonProperty("Body")]
+            public PercetageData[] Body { get; set; }
+
+            public PercetageDataList(PercetageData first, PercetageData second, PercetageData third)
+            {
+                Body = new PercetageData[] { first, second, third};
+            }
+
+        }
+        public static PercetageData PercetageDataMaker(string Location)
+        {
+            string ConnString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\aespinosa.DOMAIN01\source\repos\ConsoleApp1\ConsoleApp2\Counts.mdf;Integrated Security=True;";
+            string SensorStatement = "Select * from SensorsToAPs";
+            string OccupancyStatement = "Select * from OccupancyData Where Location = @Location";
+            int clients = 0;
+            int people = 0;
+            double percentage = 0;
+            using (SqlConnection Conn = new(ConnString))
+            {
+                Conn.Open();
+                using (SqlCommand comd = new(SensorStatement, Conn))
+                {
+                    SqlDataAdapter DataAdapter = new(comd);
+                    DataTable dt = new();
+                    DataAdapter.Fill(dt);
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        if (Location.Equals(dr.Field<string>("Location")))
+                        {
+                            string ClientStatement = "Select * from Clients Where AP_Id =" + dr.Field<int>("AP_Id");
+                            using (SqlCommand Cmd = new SqlCommand(ClientStatement, Conn))
+                            {
+                                SqlDataAdapter DataAdapter2 = new(Cmd);
+                                DataTable dt2 = new();
+                                DataAdapter2.Fill(dt2);
+                                clients += dt2.Rows.Count;
+
+                            }
+                        }
+                    }
+                }
+                using (SqlCommand comd = new(OccupancyStatement, Conn))
+                {
+                    comd.Parameters.AddWithValue("@Location", Location);
+                    SqlDataAdapter DataAdapter = new(comd);
+                    DataTable dt = new();
+                    DataAdapter.Fill(dt);
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        people += dr.Field<int>("sum_ins");
+                    }
+                }
+               
+                Conn.Close();
+            }
+            percentage = (double)clients / (double)people * 100;
+            return new PercetageData(Location, people, clients, percentage);
         }
     }
 }

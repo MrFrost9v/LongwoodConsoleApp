@@ -10,15 +10,15 @@ namespace APDateRetriever
     public class PeopleSensor
     {
         // This will post the credentials to the Sensource site to get the authentication token needed to acess the data.
-        internal static async Task<PeopleAuth> GetToken()
+        public static async Task<PeopleAuth> GetToken()
         {
             var client = new HttpClient();
 
             var collect = new Dictionary<string, string>
             {
                 { "grant_type", "client_credentials" },
-                { "client_id", "c8ccd4c4-a31e-4992-ad0f-6bad90893aaa" },
-                { "client_secret", "b45edbd8-6028-440c-85bb-e92671bb8e0c" }
+                { "client_id", "" },
+                { "client_secret", "" }
             };
 
 
@@ -31,7 +31,7 @@ namespace APDateRetriever
         }
 
         //This uses the authentication token provided to recieve the sensor data from Sensource and return it as Json.
-        internal static async Task<PeopleResponce> GetPeopleData(string AuthToken, HttpClient client)
+        public static async Task<PeopleResponce> GetPeopleData(string AuthToken, HttpClient client)
         {
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(
